@@ -1,71 +1,74 @@
-const { Course, Student } = require('../models');
+const { User, Thought } = require('../models');
+
 
 module.exports = {
-  // Get all courses
-  async getCourses(req, res) {
+  // Get all Users (GET)
+  async getAllUsers(req, res) {
     try {
-      const courses = await Course.find();
-      res.json(courses);
+      const userEL = await User.find();
+      res.json(userEL);
     } catch (err) {
       res.status(500).json(err);
     }
   },
-  // Get a course
-  async getSingleCourse(req, res) {
+  // Single user by ID (GET)
+  async getUserById(req, res) {
     try {
-      const course = await Course.findOne({ _id: req.params.courseId })
-        .select('-__v');
-
-      if (!course) {
-        return res.status(404).json({ message: 'No course with that ID' });
+      const userEL = await User.findById(req.params.userId)
+        .populate('thoughts')
+        .populate('friends');
+        
+      if (!userEL) {
+        return res.status(404).json({ message: 'User not found' });
       }
-
-      res.json(course);
+      
+      res.json(userEL);
     } catch (err) {
+      console.error(err);
       res.status(500).json(err);
     }
   },
-  // Create a course
-  async createCourse(req, res) {
+  // Create a new user (POST)
+  async createNewUser(req, res) {
     try {
-      const course = await Course.create(req.body);
-      res.json(course);
+      const userEL = await User.create(req.body);
+      res.json(userEL);
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
     }
   },
-  // Delete a course
-  async deleteCourse(req, res) {
+  // Delete a user by ID (DELETE)
+  async deleteUser(req, res) {
     try {
-      const course = await Course.findOneAndDelete({ _id: req.params.courseId });
+      const userEL = await User.findOneAndDelete({ _id: req.params.userId });
 
-      if (!course) {
-        return res.status(404).json({ message: 'No course with that ID' });
+      if (!userEL) {
+        return res.status(404).json({ message: 'No User!' });
       }
-
-      await Student.deleteMany({ _id: { $in: course.students } });
-      res.json({ message: 'Course and students deleted!' });
+      res.json(userEL);
     } catch (err) {
       res.status(500).json(err);
     }
   },
-  // Update a course
-  async updateCourse(req, res) {
+
+  // Update a user (PUT)
+  async updateUser(req, res) {
     try {
-      const course = await Course.findOneAndUpdate(
-        { _id: req.params.courseId },
+      const userEL = await User.findOneAndUpdate(
+        { _id: req.params.userId },
         { $set: req.body },
         { runValidators: true, new: true }
       );
 
-      if (!course) {
-        return res.status(404).json({ message: 'No course with this id!' });
+      if (!userEL) {
+        return res.status(404).json({ message: 'No User!' });
       }
 
-      res.json(course);
+      res.json(userEL);
     } catch (err) {
       res.status(500).json(err);
     }
   },
 };
+

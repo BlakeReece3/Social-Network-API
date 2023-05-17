@@ -34,3 +34,14 @@ const seedDB = async () => {
             });
 
             await Promise.all(thoughtPromises);
+
+        console.log('Database seeded successfully!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+        mongoose.disconnect();
+    }
+};
+
+seedDB();
+            
