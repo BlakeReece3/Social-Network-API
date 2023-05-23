@@ -1,6 +1,9 @@
-const { User, Thought } = require('../models');
+const { ObjectId } = require('mongoose').Types;
+const Thought = require('../models/Thought');
+const User = require('../models/User');
 
-module.exports = {
+
+const thoughtController = {
   // Get all Thoughts (GET)
   async getAllThoughts(req, res) {
     try {
@@ -30,9 +33,11 @@ module.exports = {
     try {
       const thought = await Thought.create(req.body);
       // Update the user's thoughts array
-      const user = await User.findById(thought.userId);
-      user.thoughts.push(thought._id);
-      await user.save();
+      const user = await User.findById(
+        req.body.userId,
+        { $push: { thoughts: thought._id } },
+        { new: true }
+      ); 
       res.json(thought);
     } catch (err) {
       console.log(err);
@@ -65,9 +70,10 @@ module.exports = {
         return res.status(404).json({ message: 'Thought not found' });
       }
       // Remove the thought from the user's thoughts array
-      const user = await User.findById(thought.userId);
-      user.thoughts.pull(thought._id);
-      await user.save();
+      const user = await User.findById(thought.userId,
+        { $pull: { thoughts: thought._id } },
+        { new: true }
+        );
       res.json({ message: 'Thought deleted' });
     } catch (err) {
       res.status(500).json(err);
@@ -107,3 +113,5 @@ module.exports = {
     }
   },
 };
+
+module.exports = thoughtController;
